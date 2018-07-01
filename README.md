@@ -1,10 +1,10 @@
-# EmotiW2018—NLPR Teams Code
+# EmotiW2018—NLPR Teams Code (Acc: 60.33%)
 
-[EmotiW2018](https://sites.google.com/view/emotiw2018) focuses on audio-video emotion classification tasks, which contains seven basic emotion categories: Angry, Disgust, Fear, Happy, Sad, Surprise and Neutral. In the experiment, we adopt additional databases: [FER+ database](https://github.com/Microsoft/FERPlus), MEC2017 database and SFEW2015 database. 
+[EmotiW2018](https://sites.google.com/view/emotiw2018) focuses on audio-video emotion classification tasks, which contains seven basic emotion categories: Angry, Disgust, Fear, Happy, Sad, Surprise and Neutral. We adopt additional databases: [FER+ database](https://github.com/Microsoft/FERPlus), MEC2017 database and SFEW2015 database. (Note: The [MEC2017](http://www.chineseldc.org/emotion.html) database can only be avaliable if you participate in the MEC2017 challenges. The SFEW2015 database can be avalible if you ask organizers for the download link.) Since lack of permission, we only show our final solution in the EmotiW2018. Any information related to the challenge database can no be found.
 
-(Note: The [MEC2017](http://www.chineseldc.org/emotion.html) database can only be avaliable if you participate in the MEC2017 challenges. The SFEW2015 database can be avalible if you ask organizers for the download link)
+Finally, we got 60.33% accuracy in EmotiW2018. Our rank: 7/32. Our result is just slightly lower than the Top1's. Please notice that there are only 653 test samples. Compared with Top1 solution, we only 1.5% lower than Top1, which means that our difference is just between 10 samples. Therefore, our solution is still very competitive.
 
-Since lack of permission, we only show our solution in EmotiW2018. Any samples in the challenge database or related information can no be found.
+Through sharing our solution, we hope that we can promote the development of emotion recognition.
 
 ## 1. Setup
 
@@ -13,7 +13,8 @@ Since lack of permission, we only show our solution in EmotiW2018. Any samples i
 - [sklearn](http://scikit-learn.org/stable/): training linearSVC, RBFSVC, RF classifiers
 - [cyvlfeat](https://github.com/menpo/cyvlfeat): realize Fisher Vectors (Change Frame-level features into Video-level features)
 - [openface](https://github.com/cmusatyalab/openface): face extration (which is based on [dlib](https://github.com/davisking/dlib))
-- intraface: face extraction (which is appplied under vs2010 + opencv)
+- [intraface](http://www.humansensing.cs.cmu.edu/intraface/): face extraction (which is appplied under vs2010 + opencv)
+- [Seetaface](https://github.com/seetaface/SeetaFaceEngine): extract indentification information.
 - ffmpeg: split audio from video, extract frames from video
 - fire: available command line input
 - tqdm: show progress
@@ -23,7 +24,7 @@ Since lack of permission, we only show our solution in EmotiW2018. Any samples i
 
 - `Audio_OpenSmile/`: Extract opensmile featrues for wav files
   - `Audio/`: save origin wav files
-  - `opensmile-2.3.0/`: opensmile source path
+  - `opensmile-2.3.0/`: opensmile source path [download_link](https://audeering.com/download/1320/)
   - `featureExtract.py`: Extract audio features
 - `baiduASR/`: Recognize the content for each audio and extract textual features
 - `C3D-tensorflow-master/`: Extract C3D features
@@ -32,21 +33,22 @@ Since lack of permission, we only show our solution in EmotiW2018. Any samples i
 - `EmotiW2018/`: the main fold
   - `checkpoints/`: save fintuned models (like DenseNet mdoels, VGG models)
   - `data/`: for data loader, Fisher Vector and other functions
-  - `Database/`: FER+ databases
-  - `models/`: classification models and fintuning models
+  - `Database/`: store FER+ databases
+  - `models/`: image-level emotion classification models
   - `utils/`: extract faces
-  - `config.py`: configuration files
+  - `config.py`: the configuration file
   - `main.py`: fintuning pretrained models on FER+ database and SFEW database
   - `feature_extract.py`: extract DenseNet and VGG bottleneck features
-  - `classifier.py` and `run_train.py`: train classifier for different features
+  - `classifier.py` and `run_train.py`: train classifiers for different features
   - `classifier_lp.py` and `loupe.py`: train 'NetVLAD', 'NetRVLAD', 'SoftDBoW', 'NetFV' classifiers
   - `predict.py`: gain predictions for samples and save them.
   - `fusion_prediction.py` and `gain_cnn_para.py`: gain fusion parameters and submission
 - `MEC2017/`: save samples and features for MEC2017 (same as `EmotiW2017/`)
 - `Point_Pose_Indenfy/`: Extract head pose, landmark points and Identification features.
 - `Traditional_video_descriptor/`: Extract DSIFT, HOG, HOG_LBP, LBP features. Since these codes are not written by me. I have no ability to open them. You can find extraction methods in the web.
-- `youtube-8m-master/`: Extract Inception features of youtube-8M
+- `youtube-8m-master/`: Extract image-level Inception features of youtube-8M
 - Multi-model Emotion Recognition.pptx: conclusion of pervious EmotiW challenges.
+- EmotiW2018_LeaderBoard.pdf: leaderboard of EmotiW2018.
 
 ## 3. Data Preporcess
 
@@ -56,7 +58,7 @@ Source codes are in `EmotiW2018/utils`
 
 ### 3.1 label Discription
 
-Since MEC2017 and EmotiW2018 both are discrete emotion classification problems. Their labels have overlapping parts.
+Since MEC2017 and EmotiW2018 both are discrete emotion classification problems. Their labels have overlapping parts. Their 'label<->index map':
 
 |          | MEC  |          | EmotiW/SFEW |
 | -------- | :--- | -------- | ----------- |
@@ -72,34 +74,38 @@ Since MEC2017 and EmotiW2018 both are discrete emotion classification problems. 
 
 ### 3.2 Face Extraction
 
+ Source codes are in `EmotiW2018/utils`
+
 In this section, we change `Video` into `Origin_Faces` and `Faces`.
 
 - `Origin_Faces`: the origin frames in the video. 
 - `Faces`: the aligned faces of each videos.
 
+We utilize Intraface toolkit in the face extraction. Source code is based on vs2010+opencv. We provide our modified version. (link: https://pan.baidu.com/s/10TaL2tBSD-w4c_hApUbvIg password: zf7n)
+
 ```sh
 ## step 0: change video into frames
-python utils/Frame_Extraction.py all_video_to_frames --VIDEO_PATH='Video' --ORIGIN_FACES_PATH='Origin_Faces'
+python Frame_Extraction.py all_video_to_frames --VIDEO_PATH='Video' --ORIGIN_FACES_PATH='Origin_Faces'
 
 ## step 1: recognize faces through intraface (realized under vs2010, C++, Window 10)
-## source code is in 'utils/IntraFacev-2018-0628-EmotiW.rar' (change Origin_Faces into Faces)
+## source code is in 'IntraFace.rar' (change Origin_Faces into Faces)
 
 ## step 2: del empty files(which means faces in the video is false detected)
-python utils/MEC_EmotiW_data_clear.py data_item_clear --pic_root='Faces'
+python MEC_EmotiW_data_clear.py data_item_clear --pic_root='Faces'
 
 ## step 3: find empty files and track faces through openface
 ### step 3.1: init bb in the first frame
-python utils/Track_Video.py all_video_to_bb --frames_root='Origin_Faces' --save_root='IMAGE' --bb_txt_save_path='IMAGE/bb.txt'
+python Track_Video.py all_video_to_bb --frames_root='Origin_Faces' --save_root='IMAGE' --bb_txt_save_path='IMAGE/bb.txt'
 ### step 3.2: mannual correct bb in the first frame (mannual change the bb.txt)
 ### step 3.3: show whether bb is correct
-python utils/Track_Video.py all_video_show_bb --image_root='IMAGE' --bb_txt_save_path='IMAGE/bb.txt'
+python Track_Video.py all_video_show_bb --image_root='IMAGE' --bb_txt_save_path='IMAGE/bb.txt'
 ### step 3.4: track bb
-python utils/Track_Video.py track_frames_from_video --origin_faces_root='Origin_Faces' --aligned_faces_root='Aligned_openface' --txt_save_path='IMAGE/bb.txt'
+python Track_Video.py track_frames_from_video --origin_faces_root='Origin_Faces' --aligned_faces_root='Aligned_openface' --txt_save_path='IMAGE/bb.txt'
 ```
 
 ###3.3 Data Format Normalization
 
-MEC2017 path: `../MEC2017`
+MEC2017 path: `MEC2017`
 
 data format：
 
@@ -111,7 +117,7 @@ data format：
 
 
 
-EmoitW2018 path: `../EmotiW2017/For_EmotiW2018`
+EmoitW2018 path: `EmotiW2017/For_EmotiW2018`
 
 data format：
 
@@ -154,6 +160,8 @@ Source code is in `EmotiW2018/main.py`, parameters are following behind:
 - `--max_epoch`: max training epoch
 - `--train_eval_test_path`: generated through Database/datas_norm_format.py
 
+FER+ database can be downloaded from [link](https://github.com/Microsoft/FERPlus). You can also download our format-normlized FER+ data from (link: https://pan.baidu.com/s/1cmhrAmZmqHpOh0aL8lDTiw password: 4zo9). And put `FER+.zip` into the `EmotiW2018/Database/`.
+
 ```sh
 # DenseNet
 python main.py main --model='DenseNet' --model_path=None --loss='crossentropyloss' --num_classes=8 --train_eval_test_path='Database/train_eval_test.npz' --pic_root='Database' --plot_every=100 --batch-size=128  --lr=0.001 --lr2=0 --lr_decay=0.5  --decay-every=234 --max_epoch=30 --cuda=-1
@@ -172,7 +180,9 @@ python main.py main --model='DenseNet' --model_path='checkpoints/DenseNet_80.963
 python main.py main --model='VGG' --model_path='checkpoints/VGG_80.0528789659' --loss='crossentropyloss' --num_classes=7 --train_eval_test_path='../SFEW2015/train_eval_test_SFEW2015_filter.npz' --pic_root='../SFEW2015/Faces' --plot_every=1 --batch-size=128  --lr=0.0001 --lr2=0 --lr_decay=0.5  --decay-every=1 --max_epoch=20 --cuda=-1
 ```
 
-#### 4.1.3 scores
+#### 4.1.3 Scores
+
+Pretrained DenseNet and VGG models  can be found in link: https://pan.baidu.com/s/1ZWEGy_BctbcUq0z359s9Jg password: x7z0. Pretraied models should be put into the `EmotiW2018/checkpoints`
 
 | model              | score on val |
 | ------------------ | ------------ |
@@ -185,7 +195,7 @@ python main.py main --model='VGG' --model_path='checkpoints/VGG_80.0528789659' -
 
 In this section, we extract bottleneck features of DenseNet and VGG.
 
-Source code is in `feature_extract.py`.
+Source code is in `EmotiW2018/feature_extract.py`.
 
 - `--model`: 'DenseNet' or 'VGG'
 - `--model_path`: model path for feature extraction
@@ -224,9 +234,9 @@ nohup python -u feature_extract.py main_VGG --model='VGG' --num_classes=7 --mode
 
 ### 4.3. C3D feature extraction
 
-This section extract C3D features, which follows the [link](https://github.com/hx173149/C3D-tensorflow).
+Source codes are in `C3D-tensorflow-master/C3D-tensorflow-master/`.
 
-To run the code, you must come into `../C3D-tensorflow-master/C3D-tensorflow-master`
+This section extract C3D features, which follows the [link](https://github.com/hx173149/C3D-tensorflow). `models/sports1m_finetuning_ucf101.model` can also be download through [link](https://pan.baidu.com/s/1nuJe8vn#list/path=%2F%E7%BD%91%E7%BB%9C%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6%E5%A4%B9%2FC3D-tensorflow&parentPath=%2F%E7%BD%91%E7%BB%9C%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6%E5%A4%B9). Or you can find in link: https://pan.baidu.com/s/1P7z54BZOLLhoXGjz4NZJbA password: 4sru.
 
 There are several important parameters in the `predict_c3d_ucf101.py`:
 
@@ -244,9 +254,11 @@ python predict_c3d_ucf101.py --pic_root='../../MEC2017/Faces' --test_list_file='
 
 ### 4.4. Inception feature extraction(from Youtube8M)
 
-This section extract Inception features for both aligned faces and original frames, which follows the [link](https://github.com/google/youtube-8m).
+Source code is in `youtube-8m-master/youtube-8m-master/feature_extractor/`
 
-To run the code, you must come into `youtube-8m-master/youtube-8m-master/feature_extractor`
+This section extractes Inception features for both aligned faces and original frames, which follows the [link](https://github.com/google/youtube-8m). 
+
+Models in `yt8m/` can be found in [link](https://github.com/google/youtube-8m). Or for convience, you can download `yt8m_pca.tgz` from link: https://pan.baidu.com/s/1u3L4rGwu-ZfxS5aa4oUL_w password: nbsj. Download `inception-2015-12-05.tgz` from link: https://pan.baidu.com/s/1qcUDNbbOxlTlnPPzLJOtYw password: 2bow.
 
 There are several important parameters in the `feature_extractor_main.py`:
 
@@ -268,8 +280,8 @@ This section extract Pose features and Indentify features.
 
 Source codes are in ` Point_Pose_Indenfy/`, They are all writen in C++.
 
-- 'Pose features' include head pose and facial landmark points. These Features are extracted using Dlib toolkit under vs2015.
-- 'Identify features' : These Features are extracted using Seetaface toolkit under vs2013.
+- 'Pose features' include head pose and facial landmark points. These Features are extracted using Dlib toolkit under vs2015. Our simplfied version can be found in link: https://pan.baidu.com/s/1eR_PsRSZmUoAkKO_h--4og password: dvf3
+- 'Identify features' : These Features are extracted using Seetaface toolkit under vs2013.  Our simplfied version can be found in link: https://pan.baidu.com/s/1RTiHQABFd4GH_omtXm7KnA password: apdw.
 
 ### 4.6 Traditional Video Features Extraction 
 
@@ -329,6 +341,8 @@ After we separate audio files from video, we extract different audio features se
 
 This section includes `IS09` ,`IS11`, `IS13`. They are all utterance-level features. They are extract in windows though OpenSmile.
 
+ `opensmile-2.3.0.rar` can be downloaded from [link](opensmile source path [download_link](https://audeering.com/download/1320/)), which should be put into the `Audio_OpenSmile/`.
+
 Source codes are in ` Audio_OpenSmile/featureExtract.py`.
 
 ```sh
@@ -343,14 +357,18 @@ python featureExtract.py change_features_into_npz
 
 This section includes `logspec`, `emb`, `qemb`. They are all segment-level features. Each segment is one second.
 
-Source codes are in ` devicehive-audio-analysis-master/`, which refers to [link](https://github.com/devicehive/devicehive-audio-analysis)
+Source codes are in ` devicehive-audio-analysis-master/`, which refers to [link](https://github.com/devicehive/devicehive-audio-analysis). 
+
+For convenience, models in ` devicehive-audio-analysis-master/models/` can be found in link: https://pan.baidu.com/s/1jreEsgjtYFONcOdIwBKEVQ password: kqw0
+
+Main files is `devicehive-audio-analysis-master/parse_file.py`. Several parameters are listed:
 
 - `--wav_root`: wav dir contains all wav files.
 - `--save_path`: save path
 
 ```sh
 # extract audio features
-python parse_file.py  gain_features --wav_root='Audio_Dataset' --save_path='./EmotiW_youtubeAudio.npz'
+python devicehive-audio-analysis-master/parse_file.py  gain_features --wav_root='Audio_Dataset' --save_path='./EmotiW_youtubeAudio.npz'
 ```
 
 ## 6. Textual Feature Extraction
@@ -394,7 +412,7 @@ python Text_Features.py extract_TFIDF
 
 ### 6.3 Extract Word2Vec Features
 
-Source codes are in `baiduASR/gain_word2vec.py`. We utilize pre-trained fasttext word vectors. [link](https://fasttext.cc/docs/en/english-vectors.html)
+Source codes are in `baiduASR/gain_word2vec.py`. We utilize pre-trained English fasttext word vectors: `wiki-news-300d-1M.vec` can be download through [link](https://fasttext.cc/docs/en/english-vectors.html).
 
 ```sh
 # change text to vector
@@ -479,9 +497,10 @@ Source code is in `EmotiW2018/fusion_predict.py`, which has following parameters
 - `--max_epoch`: number of interations in 'gain_para'
 
 ```sh
-# step1 1: Gain fusion parameters
+# step 1: Gain fusion parameters
 python fusion_predict.py main --label_type=1 --fusion_type='gain_para' --max_epoch=100 --best_para_path='1_best_para.npz'
 
 # step 2: Gain submission files
 python fusion_predict.py  main --label_type=1 --fusion_type='gain_submit' --best_para_path='1_best_para_58.81.npz'
 ```
+
