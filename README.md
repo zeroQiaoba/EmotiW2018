@@ -103,7 +103,7 @@ python Track_Video.py all_video_show_bb --image_root='IMAGE' --bb_txt_save_path=
 python Track_Video.py track_frames_from_video --origin_faces_root='Origin_Faces' --aligned_faces_root='Aligned_openface' --txt_save_path='IMAGE/bb.txt'
 ```
 
-###3.3 Data Format Normalization
+### 3.3 Data Format Normalization
 
 MEC2017 path: `MEC2017`
 
