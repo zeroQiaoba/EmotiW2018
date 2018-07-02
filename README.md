@@ -327,7 +327,7 @@ After we separate audio files from video, we extract different audio features se
 
  This section includes `mfcc`, `soundnet`,`IS10`, `Egemaps `. They are all frame-level features.
 
-- soundnet: extract based on torch7. [link]((https://github.com/cvondrick/soundnet))
+- soundnet: extract based on torch7. [link](https://github.com/cvondrick/soundnet)
 - mfcc, IS10, Egemaps: extract based on opensmile
 
 ### 5.2 EmotiW_EmotiW2017_features
