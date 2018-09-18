@@ -6,6 +6,7 @@ Finally, we got 60.33% accuracy in EmotiW2018. Our rank: 7/32. Our result is jus
 
 Through sharing our solution, we hope that we can promote the development of emotion recognition.
 
+Our Paper is avaliable in [paper](https://arxiv.org/abs/1809.06225)
 ## 1. Setup
 
 - [PyTorch](https://github.com/pytorch/pytorch)
