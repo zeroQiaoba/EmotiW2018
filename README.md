@@ -1,3 +1,5 @@
+
+
 # EmotiW2018—NLPR Teams Code (Acc: 60.33%)
 
 [EmotiW2018](https://sites.google.com/view/emotiw2018) focuses on audio-video emotion classification tasks, which contains seven basic emotion categories: Angry, Disgust, Fear, Happy, Sad, Surprise and Neutral. We adopt additional databases: [FER+ database](https://github.com/Microsoft/FERPlus), MEC2017 database and SFEW2015 database. (Note: The [MEC2017](http://www.chineseldc.org/emotion.html) database can only be avaliable if you participate in the MEC2017 challenges. The SFEW2015 database can be avalible if you ask organizers for the download link.) Since lack of permission, we only show our final solution in the EmotiW2018. Any information related to the challenge database can no be found.
@@ -11,7 +13,7 @@ Our Paper is avaliable in [paper](https://arxiv.org/abs/1809.06225)
 
 - [PyTorch](https://github.com/pytorch/pytorch)
 - [Tensorflow](https://github.com/tensorflow/tensorflow): extract C3D, Inception features, sound features
-- [sklearn](http://scikit-learn.org/stable/): training linearSVC, RBFSVC, RF classifiers
+- [sklearn](http://scikit-learn.org/stable): training linearSVC, RBFSVC, RF classifiers
 - [cyvlfeat](https://github.com/menpo/cyvlfeat): realize Fisher Vectors (Change Frame-level features into Video-level features)
 - [openface](https://github.com/cmusatyalab/openface): face extration (which is based on [dlib](https://github.com/davisking/dlib))
 - [intraface](http://www.humansensing.cs.cmu.edu/intraface/): face extraction (which is appplied under vs2010 + opencv)
@@ -342,7 +344,7 @@ After we separate audio files from video, we extract different audio features se
 
 This section includes `IS09` ,`IS11`, `IS13`. They are all utterance-level features. They are extract in windows though OpenSmile.
 
- `opensmile-2.3.0.rar` can be downloaded from [link](opensmile source path [download_link](https://audeering.com/download/1320/)), which should be put into the `Audio_OpenSmile/`.
+ `opensmile-2.3.0.rar` can be downloaded from [link](https://audeering.com/download/1320/), which should be put into the `Audio_OpenSmile/`.
 
 Source codes are in ` Audio_OpenSmile/featureExtract.py`.
 
@@ -504,4 +506,3 @@ python fusion_predict.py main --label_type=1 --fusion_type='gain_para' --max_epo
 # step 2: Gain submission files
 python fusion_predict.py  main --label_type=1 --fusion_type='gain_submit' --best_para_path='1_best_para_58.81.npz'
 ```
-
